@@ -110,20 +110,20 @@ pub(super) fn get_buddy_layout(
     })
 }
 
-// BuddyState wraps the raw buddy allocator with address translation(pfn <-> addr) metadata.
+// BuddyTranslation wraps the raw buddy allocator with address translation(pfn <-> addr) metadata.
 // Fields:
 // 1. allocator - raw buddy allocator that tracks and allocates page frames by PFN
 // 2. phys_base - base physical address of the memory range; this is the address of PFN 0
 // 3. total_pages - total number of pages in the physical memory range, used to validate PFNs
 // 4. initialized - whether the allocator and its address-conversion metadata are ready for use
-struct BuddyState {
+struct BuddyTranslation {
     allocator: BuddyAllocator,
     phys_base: usize,
     total_pages: usize,
     initialized: bool,
 }
 
-impl BuddyState {
+impl BuddyTranslation {
     const fn new() -> Self {
         Self {
             allocator: BuddyAllocator::new(),
@@ -153,13 +153,13 @@ impl BuddyState {
 
 /// Kernel synchronization and physical-address wrapper for the raw buddy.
 pub(in crate::allocator) struct BuddyHeap {
-    inner: SpinLock<BuddyState>,
+    inner: SpinLock<BuddyTranslation>,
 }
 
 impl BuddyHeap {
     pub(in crate::allocator) const fn new() -> Self {
         Self {
-            inner: SpinLock::new(BuddyState::new()),
+            inner: SpinLock::new(BuddyTranslation::new()),
         }
     }
 
